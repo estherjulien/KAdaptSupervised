@@ -35,33 +35,19 @@ def algorithm(env, K=4, time_limit=20*60, print_info=False):
     inc_lb[0] = 0
     # K-branch and bound algorithm
     now = datetime.now().time()
-    xi_new, k_new = None, None
     rt = 0
     print("Instance {} started at {}".format(env.inst_num, now))
     while N_set and time.time() - start_time < time_limit:
-        if xi_new is None:
-            # take new node
-            tau = N_set.pop(0)
-            # master problem
-            start_mp = time.time()
-            theta, x, y, model = scenario_fun_build(K, tau, env)
-            mp_time += time.time() - start_mp
-        else:
-            # make new tau from k_new
-            tot_nodes += 1
-            tau = copy.deepcopy(tau)
-            adj_tau_k = copy.deepcopy(tau[k_new])
-            adj_tau_k.append(xi_new)
-            tau[k_new] = adj_tau_k
-            # master problem
-            start_mp = time.time()
-            theta, x, y, model = scenario_fun_update(K, k_new, xi_new, env, scen_model=model)
-            mp_time += time.time() - start_mp
+        # take new node
+        tau = N_set.pop(0)
+        # master problem
+        start_mp = time.time()
+        theta, x, y, model = scenario_fun_build(K, tau, env, return_model=True)
+        mp_time += time.time() - start_mp
+
         # prune if theta higher than current robust theta
         if theta - theta_i > -1e-8:
             prune_count += 1
-            xi_new = None
-            k_new = None
             continue
 
         # subproblem
@@ -82,8 +68,6 @@ def algorithm(env, K=4, time_limit=20*60, print_info=False):
             inc_x[time.time() - start_time] = x_i
             inc_y[time.time() - start_time] = y_i
             prune_count += 1
-            xi_new = None
-            k_new = None
             if K == 1:
                 break
             else:
@@ -106,19 +90,14 @@ def algorithm(env, K=4, time_limit=20*60, print_info=False):
         else:
             K_prime = min(K, full_list[-1] + 2)
             K_set = np.arange(K_prime)
-        k_new = np.random.randint(len(K_set))
-        if K == 1:
-            N_set = [1]
-        else:
-            for k in K_set:
-                if k == k_new:
-                    continue
-                tot_nodes += 1
-                tau_tmp = copy.deepcopy(tau)
-                adj_tau_k = copy.deepcopy(tau_tmp[k])
-                adj_tau_k.append(xi_new)
-                tau_tmp[k] = adj_tau_k
-                N_set.append(tau_tmp)       # Breadth first
+
+        for k in K_set:
+            tot_nodes += 1
+            tau_tmp = copy.deepcopy(tau)
+            adj_tau_k = copy.deepcopy(tau_tmp[k])
+            adj_tau_k.append(xi_new)
+            tau_tmp[k] = adj_tau_k
+            N_set.append(tau_tmp)       # Breadth first
 
         # save every 10 minutes
         if time.time() - start_time - prev_save_time > 10*60:
@@ -129,7 +108,7 @@ def algorithm(env, K=4, time_limit=20*60, print_info=False):
             tmp_results = {"theta": theta_i, "x": x_i, "y": y_i, "tau": tau_i, "inc_thetas": inc_thetas, "inc_x": inc_x, "inc_y": inc_y, "inc_tau": inc_tau,
             "runtime": time.time() - start_time, "tot_nodes": cum_tot_nodes, "num_nodes_curr": inc_tot_nodes, "mp_time": mp_time, "sp_time": sp_time}
 
-            with open("Results/Decisions/tmp_results_cp_random_K{}_N{}_inst{}.pickle".format(K, env.N, env.inst_num), "wb") as handle:
+            with open("Results/Decisions/tmp_results_cp_normal_K{}_N{}_inst{}.pickle".format(K, env.N, env.inst_num), "wb") as handle:
                 pickle.dump([env, tmp_results], handle)
         iteration += 1
     # termination results
@@ -146,7 +125,7 @@ def algorithm(env, K=4, time_limit=20*60, print_info=False):
     results = {"theta": theta_i, "x": x_i, "y": y_i, "tau": tau_i, "inc_thetas": inc_thetas, "inc_x": inc_x, "inc_y": inc_y, "inc_tau": inc_tau,
             "runtime": time.time() - start_time, "tot_nodes": cum_tot_nodes, "num_nodes_curr": inc_tot_nodes, "mp_time": mp_time, "sp_time": sp_time}
 
-    with open("Results/Decisions/final_results_cp_rand_K{}_N{}_inst{}.pickle".format(K, env.N, env.inst_num), "wb") as handle:
+    with open("Results/Decisions/final_results_cp_normal_K{}_N{}_inst{}.pickle".format(K, env.N, env.inst_num), "wb") as handle:
         pickle.dump([env, results], handle)
     return results
 

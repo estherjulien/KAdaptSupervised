@@ -42,7 +42,7 @@ def scenario_fun_build(K, tau, env, return_model=False):
     N = env.N
     scen_model = gp.Model("Scenario-Based K-Adaptability Problem")
     # variables
-    theta = scen_model.addVar(lb=-env.theta_lb, ub=0, name="theta")
+    theta = scen_model.addVar(lb=-env.lower_bound, ub=0, name="theta")
     x_0 = scen_model.addVar(lb=0, name="x0")
     x = scen_model.addVars(N, vtype=GRB.BINARY, name="x")
     y = dict()
@@ -85,7 +85,7 @@ def scenario_fun_build(K, tau, env, return_model=False):
         return theta_sol, [x_0_sol, x_sol], [y_0_sol, y_sol]
 
 
-def separation_fun(K, x_input, y_input, theta, env):
+def separation_fun(K, x_input, y_input, theta, env, tau):
     x_0, x = x_input
     y_0, y = y_input
     N =env.N
@@ -104,17 +104,16 @@ def separation_fun(K, x_input, y_input, theta, env):
     # z constraint
     sep_model.addConstrs(gp.quicksum(z[k, l] for l in np.arange(3)) == 1 for k in np.arange(K))
     # objective constraint
-    sep_model.addConstrs((zeta + env.bigM*z[k, 2] <= -(gp.quicksum(rev_fun(projects[p], xi) *
-                                                    (x[p] + env.kappa*y[k][p]) for p in np.arange(N)) -
-                                                    env.lam*(x_0 + env.mu*y_0[k])) - theta + env.bigM)
-                                                    for k in np.arange(K))
-    # budget constraints
-    sep_model.addConstrs((zeta + env.bigM*z[k, 1] <= gp.quicksum(cost_fun(projects[p], xi) * (x[p])
-                                                    for p in np.arange(N)) - env.budget - x_0 + env.bigM)
-                                                    for k in np.arange(K))
-    sep_model.addConstrs((zeta + env.bigM*z[k, 0] <= gp.quicksum(cost_fun(projects[p], xi) * (x[p] + y[k][p])
-                                                    for p in np.arange(N)) - env.budget - x_0 - y_0[k] + env.bigM)
-                                                    for k in np.arange(K))
+    for k in np.arange(K):
+        if tau[k]:
+            sep_model.addConstr((zeta + env.bigM*z[k, 2] <= -(gp.quicksum(rev_fun(projects[p], xi) *
+                                                            (x[p] + env.kappa*y[k][p]) for p in np.arange(N)) -
+                                                            env.lam*(x_0 + env.mu*y_0[k])) - theta + env.bigM))
+            # budget constraints
+            sep_model.addConstr((zeta + env.bigM*z[k, 1] <= gp.quicksum(cost_fun(projects[p], xi) * (x[p])
+                                                            for p in np.arange(N)) - env.budget - x_0 + env.bigM))
+            sep_model.addConstr((zeta + env.bigM*z[k, 0] <= gp.quicksum(cost_fun(projects[p], xi) * (x[p] + y[k][p])
+                                                            for p in np.arange(N)) - env.budget - x_0 - y_0[k] + env.bigM))
     # solve
     sep_model.optimize()
     zeta_sol = zeta.X

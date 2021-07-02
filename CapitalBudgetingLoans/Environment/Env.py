@@ -11,12 +11,14 @@ class Project:
 
 
 class ProjectsInstance:
-    def __init__(self, N, xi_dim=2, init_cost_vector=None, init_phi_vector=None, init_psi_vector=None):
+    def __init__(self, N, xi_dim=2, init_cost_vector=None, init_phi_vector=None, init_psi_vector=None, inst_num=0):
         self.N = N
         self.kappa = 0.8
         self.lam = 0.12
         self.mu = 1.2
         self.xi_dim = xi_dim
+        self.inst_num = inst_num
+        self.init_uncertainty = np.zeros(self.xi_dim)
 
         # make cost vector for projects
         if init_cost_vector is None:
@@ -65,6 +67,7 @@ class ProjectsInstance:
         self.upper_bound = 0
         self.bigM = sum([(1+1/2)*self.projects[i].cost_nom for i in np.arange(self.N)])
         self.lower_bound = sum([(1+1/2)*self.projects[i].rev_nom for i in np.arange(N)])
+
 
 def cost_fun(project, xi):
     return (1 + sum(project.phi[i]*xi[i] for i in np.arange(project.xi_dim))/2)*project.cost_nom
