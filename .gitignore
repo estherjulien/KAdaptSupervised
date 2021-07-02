@@ -1,0 +1,7 @@
+.idea/
+**/__pycache__
+*.png
+*.pickle
+*.h5
+*.pdf
+*.mps
