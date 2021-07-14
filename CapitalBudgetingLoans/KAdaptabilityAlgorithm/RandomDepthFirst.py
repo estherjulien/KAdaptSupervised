@@ -37,14 +37,14 @@ def algorithm(env, K=4, time_limit=20*60, print_info=False):
     now = datetime.now().time()
     xi_new, k_new = None, None
     rt = 0
-    print("Instance {} started at {}".format(env.inst_num, now))
+    print("Instance R {} started at {}".format(env.inst_num, now))
     while N_set and time.time() - start_time < time_limit:
         if xi_new is None:
             # take new node
             tau = N_set.pop(0)
             # master problem
             start_mp = time.time()
-            theta, x, y, model = scenario_fun_build(K, tau, env)
+            theta, x, y, model = scenario_fun_build(K, tau, env, return_model=True)
             mp_time += time.time() - start_mp
         else:
             # make new tau from k_new
@@ -73,7 +73,7 @@ def algorithm(env, K=4, time_limit=20*60, print_info=False):
         if zeta <= 1e-04:
             if print_info:
                 now = datetime.now().time()
-                print("Instance {}: ROBUST at iteration {} ({}) (time {})   :theta = {},    Xi{},   prune count = {}".format(
+                print("Instance R {}: ROBUST at iteration {} ({}) (time {})   :theta = {},    Xi{},   prune count = {}".format(
                     env.inst_num, iteration, np.round(time.time()-start_time, 3), now, theta, [len(t) for t in tau.values()], prune_count))
             theta_i, x_i, y_i = (copy.copy(theta), copy.copy(x), copy.copy(y))
             tau_i = copy.deepcopy(tau)
@@ -90,11 +90,11 @@ def algorithm(env, K=4, time_limit=20*60, print_info=False):
                 continue
         else:
             xi_new = xi
-            gap = time.time() - start_time - rt
-            rt = time.time() - start_time
-            print("Instance {}, it {} gap {} rt {}: Xi{}, theta = {}, zeta = {}".format(env.inst_num, iteration,
-                                                                                 np.round(gap, 3), np.round(rt, 3),
-                                                                           [len(t) for t in tau.values()], theta, zeta))
+            # gap = time.time() - start_time - rt
+            # rt = time.time() - start_time
+            # print("Instance {}, it {} gap {} rt {}: Xi{}, theta = {}, zeta = {}".format(env.inst_num, iteration,
+            #                                                                      np.round(gap, 3), np.round(rt, 3),
+            #                                                                [len(t) for t in tau.values()], theta, zeta))
 
         # Create new branches
         full_list = [k for k in np.arange(K) if tau[k]]
@@ -129,7 +129,7 @@ def algorithm(env, K=4, time_limit=20*60, print_info=False):
             tmp_results = {"theta": theta_i, "x": x_i, "y": y_i, "tau": tau_i, "inc_thetas": inc_thetas, "inc_x": inc_x, "inc_y": inc_y, "inc_tau": inc_tau,
             "runtime": time.time() - start_time, "tot_nodes": cum_tot_nodes, "num_nodes_curr": inc_tot_nodes, "mp_time": mp_time, "sp_time": sp_time}
 
-            with open("Results/Decisions/tmp_results_cp_random_K{}_N{}_inst{}.pickle".format(K, env.N, env.inst_num), "wb") as handle:
+            with open("Results/Decisions/tmp_results_cp_random_K{}_N{}_d{}_inst{}.pickle".format(K, env.N, env.xi_dim, env.inst_num), "wb") as handle:
                 pickle.dump([env, tmp_results], handle)
         iteration += 1
     # termination results
@@ -142,11 +142,11 @@ def algorithm(env, K=4, time_limit=20*60, print_info=False):
     cum_tot_nodes[runtime] = tot_nodes
 
     now = datetime.now().time()
-    print("Instance {} completed at {}, solved in {} minutes".format(env.inst_num, now, runtime/60))
+    print("Instance R {} completed at {}, solved in {} minutes".format(env.inst_num, now, runtime/60))
     results = {"theta": theta_i, "x": x_i, "y": y_i, "tau": tau_i, "inc_thetas": inc_thetas, "inc_x": inc_x, "inc_y": inc_y, "inc_tau": inc_tau,
             "runtime": time.time() - start_time, "tot_nodes": cum_tot_nodes, "num_nodes_curr": inc_tot_nodes, "mp_time": mp_time, "sp_time": sp_time}
 
-    with open("Results/Decisions/final_results_cp_rand_K{}_N{}_inst{}.pickle".format(K, env.N, env.inst_num), "wb") as handle:
+    with open("Results/Decisions/final_results_cp_rand_K{}_N{}_d{}_inst{}.pickle".format(K, env.N, env.xi_dim, env.inst_num), "wb") as handle:
         pickle.dump([env, results], handle)
     return results
 
