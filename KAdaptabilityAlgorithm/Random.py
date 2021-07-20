@@ -158,8 +158,8 @@ def algorithm(K, env, scenario_fun_build, scenario_fun_update, separation_fun, t
             tmp_results = {"theta": theta_i, "x": x_i, "y": y_i, "tau": tau_i, "inc_thetas": inc_thetas, "inc_x": inc_x,
                             "inc_y": inc_y, "inc_tau": inc_tau, "runtime": time.time() - start_time,
                             "tot_nodes": cum_tot_nodes, "num_nodes_curr": inc_tot_nodes, "mp_time": mp_time, "sp_time": sp_time,
-                            "vor": {"theta": theta_i, "x": x_i, "y": y_i, "tau": tau_i, "inc_thetas": inc_thetas,
-                            "inc_x": inc_x, "inc_y": inc_y, "inc_tau": inc_tau}}
+                            "vor": {"theta": theta_vor, "x": x_vor, "y": y_vor, "tau": tau_vor, "inc_thetas": inc_thetas_vor,
+                                    "inc_x": inc_x_vor, "inc_y": inc_y_vor, "inc_tau": inc_tau_vor}}
             with open("Results/Decisions/tmp_results_{}_inst{}.pickle".format(problem_type, env.inst_num), "wb") as handle:
                 pickle.dump([env, tmp_results], handle)
         iteration += 1
@@ -180,7 +180,7 @@ def algorithm(K, env, scenario_fun_build, scenario_fun_update, separation_fun, t
     print("Instance {} completed at {}, solved in {} minutes".format(env.inst_num, now, runtime/60))
     results = {"theta": theta_i, "x": x_i, "y": y_i, "tau": tau_i, "inc_thetas": inc_thetas, "inc_x": inc_x, "inc_y": inc_y, "inc_tau": inc_tau,
                 "runtime": time.time() - start_time, "tot_nodes": cum_tot_nodes, "num_nodes_curr": inc_tot_nodes, "mp_time": mp_time, "sp_time": sp_time,
-                "vor": {"theta": theta_i, "x": x_i, "y": y_i, "tau": tau_i, "inc_thetas": inc_thetas, "inc_x": inc_x, "inc_y": inc_y, "inc_tau": inc_tau}}
+                "vor": {"theta": theta_vor, "x": x_vor, "y": y_vor, "tau": tau_vor, "inc_thetas": inc_thetas_vor, "inc_x": inc_x_vor, "inc_y": inc_y_vor, "inc_tau": inc_tau_vor}}
 
     with open("Results/Decisions/final_results_{}_inst{}.pickle".format(problem_type, env.inst_num), "wb") as handle:
         pickle.dump([env, results], handle)

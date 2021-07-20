@@ -76,9 +76,6 @@ class Graph:
             else:
                 max_thetas[k] = 0
         k_worst = np.argmax(max_thetas)
-        theta_worst = np.max(max_thetas)
-        if not vor_bound:
-            print(f"Instance {self.inst_num}: Worst theta = {theta_worst}")
 
         for k in np.arange(K):
             if k == k_worst:
@@ -228,7 +225,7 @@ class Graph:
         vertices_set[self.N - 1] = [10, 10]
         while num_nodes < self.N-1:
             x, y = np.random.uniform(0, 10, 2)
-            if (2.5 < x < 3.5 and y < 6) or (6.5 < x < 7.5 and y > 4):      # (2 < x < 4 and y < 8) or (6 < x < 8 and y > 2)
+            if (2 < x < 4 and y < 8) or (6 < x < 8 and y > 2):      # (2 < x < 4 and y < 8) or (6 < x < 8 and y > 2)
                 pass
             else:
                 vertices_set[num_nodes] = [x, y]
@@ -252,17 +249,17 @@ class Graph:
                     if i == j:
                         arcs[i, j] = 0
                         continue
-                    # x_i, y_i = vertices[i]
-                    # x_j, y_j = vertices[j]
-                    # x_mid, y_mid = [(x_i + x_j)/2, (y_i + y_j)/2]
-                    # x_qt, y_qt = [x_i*1/4 + x_j*3/4, y_i*1/4 + y_j*3/4]
-                    # x_tqt, y_tqt = [x_i*3/4 + x_j*1/4, y_i*3/4 + y_j*1/4]
-                    # if (2 < x_mid < 4 and y_mid < 8) or (6 < x_mid < 8 and y_mid > 2):
-                    #     arcs[i, j] = 0
-                    # elif (2 < x_qt < 4 and y_qt < 8) or (6 < x_qt < 8 and y_qt > 2):
-                    #     arcs[i, j] = 0
-                    # elif (2 < x_tqt < 4 and y_tqt < 8) or (6 < x_tqt < 8 and y_tqt > 2):
-                    #     arcs[i, j] = 0
+                    x_i, y_i = vertices[i]
+                    x_j, y_j = vertices[j]
+                    x_mid, y_mid = [(x_i + x_j)/2, (y_i + y_j)/2]
+                    x_qt, y_qt = [x_i*1/4 + x_j*3/4, y_i*1/4 + y_j*3/4]
+                    x_tqt, y_tqt = [x_i*3/4 + x_j*1/4, y_i*3/4 + y_j*1/4]
+                    if (2 < x_mid < 4 and y_mid < 8) or (6 < x_mid < 8 and y_mid > 2):
+                        arcs[i, j] = 0
+                    elif (2 < x_qt < 4 and y_qt < 8) or (6 < x_qt < 8 and y_qt > 2):
+                        arcs[i, j] = 0
+                    elif (2 < x_tqt < 4 and y_tqt < 8) or (6 < x_tqt < 8 and y_tqt > 2):
+                        arcs[i, j] = 0
             if self.isconnected(self, arcs):
                 connected = True
             else:
